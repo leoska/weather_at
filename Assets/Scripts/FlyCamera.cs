@@ -2,38 +2,55 @@ using UnityEngine;
 
 public class FlyCamera : MonoBehaviour
 {
-    public float moveSpeed = 100f;      // скорость движения
-    public float lookSpeed = 2f;       // чувствительность мыши
-    public float sprintMultiplier = 2f;// ускорение при Shift
+    public enum CameraMode
+    {
+        Standard,
+        Reconstruction
+    }
 
-    private float _rotationX = 0f;
-    private float _rotationY = 0f;
+    public CameraMode mode = CameraMode.Standard;
+
+    public float moveSpeed = 100f;
+    public float lookSpeed = 2f;
+    public float sprintMultiplier = 2f;
+
+    public Vector3 reconstructionBaseRotation = new Vector3(0f, 270f, 270f);
+
+    private float _yaw = 0f;
+    private float _pitch = 0f;
 
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked; // скрыть и зафиксировать курсор
+        Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
     void Update()
     {
-        // Поворот мышью
-        _rotationX += Input.GetAxis("Mouse X") * lookSpeed;
-        _rotationY -= Input.GetAxis("Mouse Y") * lookSpeed;
-        _rotationY = Mathf.Clamp(_rotationY, -90f, 90f); // ограничиваем угол вверх/вниз
+        _yaw += Input.GetAxis("Mouse X") * lookSpeed;
+        _pitch -= Input.GetAxis("Mouse Y") * lookSpeed;
+        _pitch = Mathf.Clamp(_pitch, -90f, 90f);
 
-        transform.localRotation = Quaternion.Euler(_rotationY, _rotationX, 0f);
+        if (mode == CameraMode.Reconstruction)
+        {
+            Quaternion axisCorrection = Quaternion.Euler(reconstructionBaseRotation);
+            Quaternion mouseLook = Quaternion.Euler(_pitch, _yaw, 0f);
+            transform.localRotation = axisCorrection * mouseLook;
+        }
+        else
+        {
+            transform.localRotation = Quaternion.Euler(_pitch, _yaw, 0f);
+        }
 
-        // Движение
         float speed = moveSpeed * (Input.GetKey(KeyCode.LeftShift) ? sprintMultiplier : 1f);
         Vector3 move = new Vector3(
-            Input.GetAxis("Horizontal"), // A/D или ←/→
-            (Input.GetKey(KeyCode.E) ? 1 : 0) - (Input.GetKey(KeyCode.Q) ? 1 : 0), // вверх/вниз (E/Q)
-            Input.GetAxis("Vertical")    // W/S или ↑/↓
+            Input.GetAxis("Horizontal"),
+            (Input.GetKey(KeyCode.E) ? 1 : 0) - (Input.GetKey(KeyCode.Q) ? 1 : 0),
+            Input.GetAxis("Vertical")
         );
 
         transform.Translate(move * (speed * Time.deltaTime));
-        
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;

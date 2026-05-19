@@ -309,12 +309,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 156b90ab57b9b4050ac55235d94772c4, type: 3}
+  m_Script: {fileID: 11500000, guid: 207ceefe1d3b4454ba2baf6e4014b4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mode: 0
   moveSpeed: 100
   lookSpeed: 2
   sprintMultiplier: 2
+  reconstructionBaseRotation: {x: 0, y: 270, z: 270}
 --- !u!1 &1399903115
 GameObject:
   m_ObjectHideFlags: 0
