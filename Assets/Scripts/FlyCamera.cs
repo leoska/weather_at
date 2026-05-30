@@ -19,6 +19,8 @@ public class FlyCamera : MonoBehaviour
     private float _yaw = 0f;
     private float _pitch = 0f;
 
+    public float movementSpeed = 0f;
+
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -50,7 +52,7 @@ public class FlyCamera : MonoBehaviour
         );
 
         transform.Translate(move * (speed * Time.deltaTime));
-
+        movementSpeed = move.magnitude;
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;

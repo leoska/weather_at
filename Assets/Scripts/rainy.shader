@@ -1,8 +1,10 @@
-Shader "Hidden/raindrops.glsl"
+Shader "Hidden/rainy"
 {
+   
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        _MovementSpeed ("MovementSpeed", float) = 0.0
     }
     SubShader
     {
@@ -16,7 +18,7 @@ Shader "Hidden/raindrops.glsl"
             #pragma fragment frag
 
             #include "UnityCG.cginc"
-
+            
             struct appdata
             {
                 float4 vertex : POSITION;
@@ -38,9 +40,10 @@ Shader "Hidden/raindrops.glsl"
             }
 
             sampler2D _MainTex;
+            float _MovementSpeed;
                 #define rainSpeed 0.5
-                #define S(t) smoothstep(0.,1.,t)
-                #define ratio float2(iResolution.x/iResolution.y, 1)
+                #define S(t) smoothstep(0.0, 1.0, t)
+                #define ratio float2(iResolution.x / iResolution.y, 1)
 
                 // Author: Élie Michel
                 // License: CC BY 3.0
@@ -54,7 +57,7 @@ Shader "Hidden/raindrops.glsl"
                 float2 noise(float2 p){
                     float2 co = floor(p);
                     float2 mu = frac(p);
-                    mu = 3.*mu*mu-2.*mu*mu*mu;
+                    mu = 3.0 * mu * mu - 2.0 * mu * mu * mu;
                     float2 a = rand((co+float2(0.,0.)));
                     float2 b = rand((co+float2(1.,0.)));
                     float2 c = rand((co+float2(0.,1.)));
@@ -86,7 +89,7 @@ Shader "Hidden/raindrops.glsl"
                         // d.r -> only x% of drops are kept on, with x depending on the size of drops
                         if (d.r < (5.-r)*.08 && t > .5) {
                             // Drop normal
-                            float3 v = normalize(-float3(cos(p), lerp(.2, 2., t-.5)));
+                            float3 v = 0.1*normalize(-float3(cos(p), lerp(.2, 2., t-.5)));
                             // fragColor = float4(v * 0.5 + 0.5, 1.0);  // show normals
                             
                             // Poor man's refraction (no visual need to do more)
@@ -100,7 +103,7 @@ Shader "Hidden/raindrops.glsl"
                     //  from DAVE HOSKINS
                 float3 p3 = frac(float3(p,p,p) * float3(.1031,.11369,.13787));
                 p3 += dot(p3, p3.yzx + 20.);
-                return frac(float3((p3.x + p3.y)*p3.z, (p3.x+p3.z)*p3.y, (p3.y+p3.z)*p3.x));
+                return frac(float3((p3.x + p3.y) * p3.z, (p3.x + p3.z)*p3.y, (p3.y + p3.z) * p3.x));
                 }
 
                 struct Lens {
@@ -135,89 +138,84 @@ Shader "Hidden/raindrops.glsl"
                 Lens getLens(float2 uv, float T, float2 shift, float z) {
                     T *= rainSpeed;
                     T += z * 1024.;
-                    float2 cells = float2(4.0, 0.5);
+
+                    float2 cells = float2(0.5, 0.5);
                     float2 grid = cells;
-                    float2 id = floor(uv*grid)+shift;
+                    float2 id = float2(0,0);
                     float3 left = float3(id / cells, 0);
-                    float2 cellCenter = left.xy + float2(1.0 / cells / 4.0);
-                    float timeShift = (smoothRand(0.01, 1.0, id.x + z * 64.));
-                    float timeMul = 1. - z * 0.4;
-                    float t = frac(T*timeMul+timeShift);
-                    float cycle = floor(T*timeMul+timeShift);
+                    float2 cellCenter = left.xy;
+                    float timeShift = smoothRand(0.01, 1.0, id.x + z * 64.);
+                    float timeMul = 0.3;
+                    float t = frac(T * timeMul + timeShift);
+                    float cycle = floor(T * timeMul + timeShift);
                     float2 UV = uv;
-                    float st = S(sin(1.51*t));
+                    float st = S(sin(1.51 * t));
                     float s = st / cells.y;
                     
                     float2 n = N13(id.x * 35.2 + id.y * 2376.1 + cycle).xy;
                     float2 n2 = N13(id.x * 35.2 + (id.y - 1.) * 2376.1 + (cycle + 1.0)).xy;
-                    float n3 = N13((cycle + id.y) + id.x).x;
+                    float n3 = N13(cycle + id.y + id.x).x;
                     Lens l = createLens(n3);
                     
-                    float2 p1 = n.xy / cells / 2.;
-                    float2 p2 =  n2.xy / cells / 2.;
-                    float2 p = p1 * (1.-st) + p2 * st;
+                    float2 p1 = n.xy * float2(2., 1.);
+                    float2 p2 =  n2.xy * float2(2., 1.);
+                    float2 p = p1 * (1.0 - st) + p2 * st;
                     l.center = cellCenter + p;
                     l.center.y -= s;
-                    l.r = n3 / 20. + 0.04;
-                    l.h = 5.0;
+                    l.r = n3 / 16. + 0.08;
+                    l.h = 6.0;
                     l.start = cellCenter + p1;
                     l.end = cellCenter + p2 - float2(0, 1. / cells.y);
                     return l;
                 }
 
-                Lens getStaticLens(float2 uv, float T) {
-                    T *= rainSpeed * 1.5; 
-                    float2 UV = uv;
-                    float2 cells = float2(6., 4.0);
-                    float2 a = float2(cells);
-                    float2 grid = a;
-                    float2 id = floor(uv*grid);
-                    float2 left = id / cells;
-                    float cycles = floor(smoothRand(1.0, 5.0, id.x * cells.x + id.y + floor(T)));
-                    float timeShift = smoothRand(0.0, 1.0, id.x * cells.x + id.y + floor(T));
-                    T += timeShift;
-                    float cycle = floor(T * cycles);
-                    float3 shift = N13(id.x * 35.2 + id.y * 2376.1 + cycle) / float3(cells, 1.)/1.5;
-                    float3 n2 = N13(id.x * 35.2 + (id.y - 1.) * 2376.1 + (cycle + 1.0));
-                    float3 n3 = N13(floor(cycle + id.y) + id.x);
-                    float t = frac(T * cycles);
-                    Lens l;
-                    l.coef = float2(1,1);
-                    float st = S(t);
-                    l.center = left + float2(1.0 / cells / 4.0) + shift.xy;
-                    l.r = lerp(n3.x / 55.0, 0.0, t) + 0.01;
-                    l.h = 1.5;
-                    return l;
-                }
-
             float hitLens(float2 uv, Lens l){
                 float t = l.h * smoothstep(l.r, 0., length((uv - l.center.xy)));
-                
                 float2 v = l.end - uv;
                 float2 path = normalize(l.end - l.start);
                 float2 dist = v - dot(v, path) * path;
                 float distFromDrop = length(uv - l.center);
                 float taper = smoothstep(0.8, 0.0, distFromDrop); 
                 float breakup = smoothstep(-0.5, 1.0, sin(uv.y * 20.0));
-                float t2 = smoothstep(l.r, 0., length(dist)) * taper * l.h * breakup;
+                float t2 = smoothstep(l.r, 0.0, length(dist)) * taper * l.h * breakup;
                 if (uv.y < l.center.y || uv.y > l.start.y && length(uv - l.start) > l.r) t2 = 0.;
                 float m = softMax(t, t2);
                 return m;
             }
 
             float Drops(float2 uv, float t) {
-                Lens l1 = getStaticLens(uv, t);
-                Lens l2 = getLens(uv, t, float2(0.0,0), 0.);
-                Lens l3 = getLens(uv, t, float2(0,1.0), 0.);
-                Lens l4 = getLens(uv, t, float2(0.0,0), 1.);
-                Lens l5 = getLens(uv, t, float2(0,1.0), 1.);
+                #define layers 4.0
                 float2 UV = uv;
-                float cst = hitLens(UV, l1);
-                float cf = hitLens(UV, l2);
-                float cs = hitLens(UV, l4);
-                float c = lerp(cf, cs, 0.5);
-                //c = max(c, cst); 
+                float c = 0;
+
+                for (float l = 0.0; l < layers; l += 1.0) {
+                    Lens drop = getLens(uv, t, float2(0.0, 0), l);
+                    c += hitLens(UV, drop);
+                }
+
+                // c /= 2;
                 return c;
+            }
+
+            float noise_mix(float2 p) {
+                float2 v = noise(p * float2(600., 200))
+                    + noise(p * float2(500., 150)) 
+                    + noise(p * float2(400., 100)) 
+                    + noise(p * float2(90., 30));
+                v /= 4.0;
+                float res = v.x + v.y;
+                return res / 2.0;
+            }
+
+            float3 getNoiseNormal(float2 uv, float strength) {
+                float center = noise_mix(uv);
+                float t      = noise_mix(uv + float2(0.0, strength));
+                float r      = noise_mix(uv + float2(strength, 0.0));
+                
+                float dx = (center - r) / strength;
+                float dy = (center - t) / strength;
+                
+                return normalize(float3(dx, dy, 1.0));
             }
 
             float4 mainImage(float2 fragCoord)
@@ -225,6 +223,10 @@ Shader "Hidden/raindrops.glsl"
                 float iTime = _Time.y;
                 float2 uv = fragCoord / _ScreenParams.y;
                 float2 UV = fragCoord / _ScreenParams.xy;
+                float blur = noise((UV + sin(iTime / 31.0)) * 30.0) * _MovementSpeed
+                    + noise(UV * 30.0) * (1 - _MovementSpeed);
+                float2 sft = blur * length(UV - float2(0.5, 0.5));
+                UV += sft * 0.05;
                 float2 e = float2(.001, 0.);
                 float c = Drops(uv, iTime);
                 float cx = Drops(uv + e, iTime);
@@ -232,10 +234,26 @@ Shader "Hidden/raindrops.glsl"
                 float2 n = float2(cx-c, cy-c);
                 float2 n2 = staticDrops(UV, iTime);
                 n = max(n,n2);
+                // n *= 2.0;
                 float3 col = tex2D(_MainTex, UV + n).rgb;
+
+                float2 wetN = getNoiseNormal(UV, cos(iTime / 13.) * sin(iTime / 17.) * 0.1 + 0.1).xy;
+                float2 reflectionUV = UV + wetN;
+                float3 reflectionColor = tex2D(_MainTex, reflectionUV).rgb;
+
+                float brightness = dot(reflectionColor, float3(0.2126, 0.7152, 0.0722));
+
+                float3 specularReflection = reflectionColor * pow(smoothstep(0.0, 1.0, brightness), 1.0);
+                specularReflection.x = pow(specularReflection.x, 0.3);
+                specularReflection.y = pow(specularReflection.y, 0.3);
+                specularReflection.z = pow(specularReflection.z, 0.3);
+
+                col += specularReflection / 25.0;
+
                 float4 fragColor = float4(col, 1);
                 return fragColor;
             }
+
             fixed4 frag (v2f i) : SV_Target
             {
                 fixed4 col = mainImage(i.uv * _ScreenParams.xy);
