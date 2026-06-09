@@ -66,10 +66,10 @@ Shader "Unlit/WetGlass"
             }
 
             float noise_mix(float2 p) {
-                float2 v = noise(p * float2(600., 200))
-                    + noise(p * float2(500., 150)) 
-                    + noise(p * float2(400., 100)) 
-                    + noise(p * float2(90., 30));
+                float2 v = noise(p * float2(200., 100))
+                    + noise(p * float2(150., 100)) 
+                    + noise(p * float2(100., 50)) 
+                    + noise(p * float2(40., 20));
                 v /= 4.0;
                 float res = v.x + v.y;
                 return res / 2.0;
@@ -85,15 +85,21 @@ Shader "Unlit/WetGlass"
                 
                 return normalize(float3(dx, dy, 1.0));
             }
+            
+            float get_blur(float2 p) {
+               return (noise(p * 60.0) + noise(p * 30.0)) / 2.0;
+            }
 
             float4 mainImage(float2 fragCoord)
             {
                 float iTime = _Time.y;
-                float2 uv = fragCoord / _ScreenParams.y;
                 float2 UV = fragCoord / _ScreenParams.xy;
 
-                float blur = noise((UV + sin(iTime / 31.0)) * 30.0) * _MovementSpeed
-                    + noise(UV * 30.0) * (1 - _MovementSpeed);
+                float2 UVShifted = UV + sin(iTime / 31.0);
+
+                float moveBlur = get_blur(UVShifted);
+                float staticBlur = get_blur(UV);
+                float blur = moveBlur * _MovementSpeed + staticBlur * (1 - _MovementSpeed);
                 float2 sft = blur * length(UV - float2(0.5, 0.5));
                 UV += sft * 0.05;
                 

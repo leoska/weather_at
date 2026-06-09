@@ -200,11 +200,16 @@ Shader "Unlit/Drops"
             float iTime = _Time.y;
             float2 uv = fragCoord / _ScreenParams.y;
             float2 UV = fragCoord / _ScreenParams.xy;
+
+            float teta = -3.14 / 2.5 * _MovementSpeed;
+            float2x2 rot = float2x2(cos(teta), -sin(teta), sin(teta), cos(teta));
+
+            float2 uvRot = mul(rot, uv);
             
             float2 e = float2(.001, 0.);
-            float c = Drops(uv, iTime);
-            float cx = Drops(uv + e, iTime);
-            float cy = Drops(uv + e.yx, iTime);
+            float c = Drops(uvRot, iTime);
+            float cx = Drops(uvRot + e, iTime);
+            float cy = Drops(uvRot + e.yx, iTime);
             float2 n = float2(cx-c, cy-c);
 
             float2 n2 = staticDrops(UV, iTime);
