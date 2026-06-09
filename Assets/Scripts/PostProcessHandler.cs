@@ -4,7 +4,7 @@ using UnityEngine;
 [ExecuteInEditMode] // Чтобы эффект был виден даже в редакторе, а не только в игре
 public class PostProcessHandler : MonoBehaviour
 {
-    public Material effectMaterial;
+    public Material[] effectMaterials;
     private FlyCamera flyCam;
 
 
@@ -13,23 +13,31 @@ public class PostProcessHandler : MonoBehaviour
         flyCam = GetComponent<FlyCamera>();
     }
 
-    // Метод вызывается автоматически после того, как камера отрендерила сцену
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        if (effectMaterial != null)
-        {
-            // Graphics.Blit берет текстуру 'source' (то, что видит камера),
-            // прогоняет её через ваш шейдер (материал)
-            // и записывает результат в 'destination' (экран)
-            effectMaterial.SetFloat("_MovementSpeed", flyCam.movementSpeed);
-            Graphics.Blit(source, destination, effectMaterial);
-        }
-        else
-        {
-            // Если материал не задан, просто выводим картинку как есть
-            Graphics.Blit(source, destination);
-        }
-        
+        RenderTextureDescriptor desc = source.descriptor;
+    
+        RenderTexture bufferA = RenderTexture.GetTemporary(desc);
+        RenderTexture bufferB = RenderTexture.GetTemporary(desc);
 
+        Graphics.Blit(source, bufferA);
+
+        RenderTexture src = bufferA;
+        RenderTexture dst = bufferB;
+
+        foreach (Material mat in effectMaterials)
+        {
+            mat.SetFloat("_MovementSpeed", flyCam.movementSpeed);
+            Graphics.Blit(src, dst, mat);
+
+            RenderTexture tmp = src;
+            src = dst;
+            dst = tmp; 
+        }
+
+        Graphics.Blit(src, destination);
+        
+        RenderTexture.ReleaseTemporary(bufferA);
+        RenderTexture.ReleaseTemporary(bufferB);
     }
 }
