@@ -79,12 +79,13 @@ Material:
     - _MaxRadius: 0.25
     - _Metallic: 0
     - _MinRadiusX: 0.32
-    - _MinRadiusY: 0.26
+    - _MinRadiusY: 0.85
     - _Mode: 0
     - _NoiseAmount: 0.37
-    - _NoiseScale: 2.39
+    - _NoiseScale: 1.67
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _PuddleScale: 1
     - _PuddleSeed: 1.234
     - _RandomSeed: 5.42
     - _ShowDrop: 1

@@ -13,12 +13,11 @@ Shader "Custom/RainDropWaves_Puddle_Final"
         
         [Header(Rain Grid)]
         _GridSize ("Grid Size (NxN)", Float) = 12
-        _DropInterval ("Drop Interval (seconds)", Float) = 0.8   // должно быть больше _MaxRadius/_WaveSpeed
+        _DropInterval ("Drop Interval (seconds)", Float) = 0.8
         _RandomSeed ("Random Seed", Float) = 0.0
         
         [Header(Puddle Shape)]
-        _MinRadiusX ("Min Radius X", Float) = 0.25
-        _MinRadiusY ("Min Radius Y", Float) = 0.2
+        // Эти параметры игнорируются, радиусы генерируются автоматически от позиции объекта
         _MaxOutwardOffset ("Max Outward Offset", Float) = 0.12
         _NoiseScale ("Noise Scale", Float) = 6.0
         _NoiseAmount ("Noise Amount", Float) = 0.18
@@ -49,6 +48,7 @@ Shader "Custom/RainDropWaves_Puddle_Final"
             {
                 float2 uv     : TEXCOORD0;
                 float4 vertex : SV_POSITION;
+                float3 objectOrigin : TEXCOORD1; // мировые координаты объекта (центр)
             };
 
             // Параметры
@@ -64,8 +64,6 @@ Shader "Custom/RainDropWaves_Puddle_Final"
             float  _DropInterval;
             float  _RandomSeed;
             
-            float  _MinRadiusX;
-            float  _MinRadiusY;
             float  _MaxOutwardOffset;
             float  _NoiseScale;
             float  _NoiseAmount;
@@ -85,13 +83,12 @@ Shader "Custom/RainDropWaves_Puddle_Final"
                 return frac(float2(p.x * p.y, p.x * p.y + p.x));
             }
             
-            // Маска лужи (центр 0.5, эллипс + шум, резкий край)
-            float GetPuddleMask(float2 uv)
+            float GetPuddleMask(float2 uv, float minRX, float minRY)
             {
                 float2 center = float2(0.5, 0.5);
                 float2 p = uv - center;
                 
-                float ellipseDist = (p.x * p.x) / (_MinRadiusX * _MinRadiusX) + (p.y * p.y) / (_MinRadiusY * _MinRadiusY);
+                float ellipseDist = (p.x * p.x) / (minRX * minRX) + (p.y * p.y) / (minRY * minRY);
                 
                 float mask;
                 if (ellipseDist <= 1.0)
@@ -103,7 +100,7 @@ Shader "Custom/RainDropWaves_Puddle_Final"
                     float angle = atan2(p.y, p.x);
                     float cosA = cos(angle);
                     float sinA = sin(angle);
-                    float r_boundary = 1.0 / sqrt((cosA*cosA)/(_MinRadiusX*_MinRadiusX) + (sinA*sinA)/(_MinRadiusY*_MinRadiusY));
+                    float r_boundary = 1.0 / sqrt((cosA*cosA)/(minRX*minRX) + (sinA*sinA)/(minRY*minRY));
                     float r_current = length(p);
                     float distanceOutside = max(0.0, r_current - r_boundary);
                     float t = distanceOutside / _MaxOutwardOffset;
@@ -126,52 +123,48 @@ Shader "Custom/RainDropWaves_Puddle_Final"
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
+                o.objectOrigin = mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
                 return o;
             }
             
             float4 frag (v2f i) : SV_Target
             {
-                // Отбрасываем всё, что вне лужи
-                if (GetPuddleMask(i.uv) < 0.5) discard;
+                float seedX = i.objectOrigin.x * 0.7 + i.objectOrigin.z * 1.3;
+                float seedY = i.objectOrigin.z * 0.9 + i.objectOrigin.x * 1.1;
+                float minRX = 0.15 + 0.30 * (sin(seedX) * 0.4 + 0.4);
+                float minRY = 0.15 + 0.30 * (cos(seedY) * 0.4 + 0.4);
+                
+                if (GetPuddleMask(i.uv, minRX, minRY) < 0.5) discard;
                 
                 float currentTime = _Time.y;
                 float totalAmplitude = 0.0;
                 
-                // Волновые константы
                 float k = 6.28318530718 / _WaveLength;
                 float omega = k * _WaveSpeed;
                 float waveLifetime = _MaxRadius / _WaveSpeed;
                 
                 float gridSize = _GridSize;
                 float cellW = 1.0 / gridSize;
-                
                 float interval = _DropInterval;
                 
-                // Перебор клеток
                 for (int cx = 0; cx < gridSize; cx++)
                 {
                     for (int cy = 0; cy < gridSize; cy++)
                     {
                         float2 cellSeed = float2(float(cx), float(cy)) + _RandomSeed;
                         
-                        // Позиция капли внутри клетки
                         float2 randPos = hash2(cellSeed);
                         float2 dropPos = float2(
                             (float(cx) + randPos.x) * cellW,
                             (float(cy) + randPos.y) * cellW
                         );
                         
-                        // Если капля падает вне лужи – не создаём волну
-                        if (GetPuddleMask(dropPos) < 0.5) continue;
+                        if (GetPuddleMask(dropPos, minRX, minRY) < 0.5) continue;
                         
-                        // Случайная фаза (сдвиг времени первого падения)
                         float phase = hash(cellSeed + 0.123) * interval;
-                        
-                        // Время последнего падения в этой клетке
                         float t_last = floor((currentTime - phase) / interval) * interval + phase;
                         float age = currentTime - t_last;
                         
-                        // Если волна ещё не затухла и возраст в пределах времени жизни
                         if (age >= 0.0 && age <= waveLifetime)
                         {
                             float2 delta = i.uv - dropPos;
