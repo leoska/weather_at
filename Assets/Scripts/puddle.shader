@@ -1,11 +1,7 @@
-Shader "Custom/RainDropWaves_Puddle_Final"
+Shader "Custom/RainDropWaves_Puddle"
 {
     Properties
     {
-        _BaseColor ("Base Color", Color) = (0.0, 0.4, 0.8, 1.0)
-        _WaveColor ("Wave Color (crest)", Color) = (1.0, 1.0, 1.0, 1.0)
-        _TroughColor ("Trough Color", Color) = (0.0, 0.2, 0.5, 1.0)
-        
         _Amplitude ("Wave Amplitude", Float) = 0.8
         _MaxRadius ("Wave max Radius", Float) = 0.8
         _WaveSpeed ("Wave Speed", Float) = 1.5
@@ -17,10 +13,13 @@ Shader "Custom/RainDropWaves_Puddle_Final"
         _RandomSeed ("Random Seed", Float) = 0.0
         
         [Header(Puddle Shape)]
-        // Эти параметры игнорируются, радиусы генерируются автоматически от позиции объекта
         _MaxOutwardOffset ("Max Outward Offset", Float) = 0.12
         _NoiseScale ("Noise Scale", Float) = 6.0
         _NoiseAmount ("Noise Amount", Float) = 0.18
+
+        [Header(Reflections)]
+        _ReflectionStrength ("Reflection Strength", Range(0,1)) = 0.8
+        _FresnelPower ("Fresnel Power", Float) = 2.0
     }
     
     SubShader
@@ -42,32 +41,31 @@ Shader "Custom/RainDropWaves_Puddle_Final"
             {
                 float4 vertex : POSITION;
                 float2 uv     : TEXCOORD0;
+                float3 normal : NORMAL;
             };
 
             struct v2f
             {
                 float2 uv     : TEXCOORD0;
                 float4 vertex : SV_POSITION;
-                float3 objectOrigin : TEXCOORD1; // мировые координаты объекта (центр)
+                float3 objectOrigin : TEXCOORD1;
+                float3 worldPos     : TEXCOORD2;
+                float3 worldNormal  : TEXCOORD3;
             };
 
-            // Параметры
-            float4 _BaseColor;
-            float4 _WaveColor;
-            float4 _TroughColor;
             float  _Amplitude;
             float  _MaxRadius;
             float  _WaveSpeed;
             float  _WaveLength;
-            
             float  _GridSize;
             float  _DropInterval;
             float  _RandomSeed;
-            
             float  _MaxOutwardOffset;
             float  _NoiseScale;
             float  _NoiseAmount;
-            
+            float _ReflectionStrength;
+            float _FresnelPower;
+
             // Хеш-функции
             float hash(float2 p)
             {
@@ -83,6 +81,7 @@ Shader "Custom/RainDropWaves_Puddle_Final"
                 return frac(float2(p.x * p.y, p.x * p.y + p.x));
             }
             
+            // Маска лужи
             float GetPuddleMask(float2 uv, float minRX, float minRY)
             {
                 float2 center = float2(0.5, 0.5);
@@ -124,6 +123,8 @@ Shader "Custom/RainDropWaves_Puddle_Final"
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
                 o.objectOrigin = mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
+                o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                o.worldNormal = UnityObjectToWorldNormal(v.normal);
                 return o;
             }
             
@@ -133,67 +134,84 @@ Shader "Custom/RainDropWaves_Puddle_Final"
                 float seedY = i.objectOrigin.z * 0.9 + i.objectOrigin.x * 1.1;
                 float minRX = 0.15 + 0.30 * (sin(seedX) * 0.4 + 0.4);
                 float minRY = 0.15 + 0.30 * (cos(seedY) * 0.4 + 0.4);
-                
+
                 if (GetPuddleMask(i.uv, minRX, minRY) < 0.5) discard;
-                
+
                 float currentTime = _Time.y;
                 float totalAmplitude = 0.0;
-                
+
                 float k = 6.28318530718 / _WaveLength;
                 float omega = k * _WaveSpeed;
                 float waveLifetime = _MaxRadius / _WaveSpeed;
-                
+
                 float gridSize = _GridSize;
                 float cellW = 1.0 / gridSize;
                 float interval = _DropInterval;
-                
+
                 for (int cx = 0; cx < gridSize; cx++)
                 {
                     for (int cy = 0; cy < gridSize; cy++)
                     {
                         float2 cellSeed = float2(float(cx), float(cy)) + _RandomSeed;
-                        
+
                         float2 randPos = hash2(cellSeed);
                         float2 dropPos = float2(
                             (float(cx) + randPos.x) * cellW,
                             (float(cy) + randPos.y) * cellW
                         );
-                        
+
                         if (GetPuddleMask(dropPos, minRX, minRY) < 0.5) continue;
-                        
+
                         float phase = hash(cellSeed + 0.123) * interval;
                         float t_last = floor((currentTime - phase) / interval) * interval + phase;
                         float age = currentTime - t_last;
-                        
+
                         if (age >= 0.0 && age <= waveLifetime)
                         {
                             float2 delta = i.uv - dropPos;
                             float dist = length(delta);
-                            
+
                             float waveFront = age * _WaveSpeed;
                             if (dist <= waveFront)
                             {
                                 float phaseWave = k * dist - omega * age;
                                 float amplitude = sin(phaseWave) * _Amplitude;
-                                
+
                                 float distFactor = 1.0 / (1.0 + dist * 3.0);
                                 float timeFade = 1.0 - smoothstep(0.0, waveLifetime, age);
                                 float falloff = distFactor * timeFade;
-                                
+
                                 totalAmplitude += amplitude * falloff;
                             }
                         }
                     }
                 }
-                
-                float intensity = saturate(abs(totalAmplitude) * 2.0);
-                float3 color;
-                if (totalAmplitude > 0.0)
-                    color = lerp(_BaseColor.rgb, _WaveColor.rgb, intensity);
-                else
-                    color = lerp(_BaseColor.rgb, _TroughColor.rgb, intensity);
-                
-                return float4(color, 1.0);
+
+                float height = totalAmplitude;
+
+                float3 worldPos = i.worldPos;
+                float3 worldNormal = i.worldNormal;
+
+                float3 dpdx = ddx(worldPos);
+                float3 dpdy = ddy(worldPos);
+                float dhdx = ddx(height);
+                float dhdy = ddy(height);
+
+                float3 Tx = dpdx + worldNormal * dhdx;
+                float3 Ty = dpdy + worldNormal * dhdy;
+                float3 perturbedNormal = normalize(cross(Tx, Ty));
+
+                float3 viewDir = normalize(_WorldSpaceCameraPos - worldPos);
+                float3 refl = reflect(-viewDir, perturbedNormal);
+                half4 reflectionColor = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, refl);
+                reflectionColor.rgb = DecodeHDR(reflectionColor, unity_SpecCube0_HDR);
+
+                float NdotV = saturate(dot(worldNormal, viewDir));
+                float fresnel = pow(1.0 - NdotV, _FresnelPower);
+
+                float3 finalColor = reflectionColor.rgb * fresnel * _ReflectionStrength;
+
+                return float4(finalColor, 1.0);
             }
             ENDCG
         }
