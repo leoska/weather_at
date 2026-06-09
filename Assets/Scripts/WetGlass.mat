@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: raindrops
+  m_Name: WetGlass
   m_Shader: {fileID: 4800000, guid: 5a4723009512f0f73841d2e4155c38e2, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
