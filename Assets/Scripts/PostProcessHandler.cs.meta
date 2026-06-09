@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<< HEAD
 guid: 520d01de1cf0eea4ba87ee669960d61b
+=======
+guid: b87cf36d94f813c539bca1a38b69a556
+>>>>>>> postrprocessing_pipline
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
