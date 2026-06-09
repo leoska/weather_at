@@ -328,7 +328,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a7e9dd3bf212af469e584d3ed7811dc, type: 3}
+  m_Script: {fileID: 11500000, guid: 520d01de1cf0eea4ba87ee669960d61b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   effectMaterials:
