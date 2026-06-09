@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: raindrops
-  m_Shader: {fileID: 4800000, guid: 5a4723009512f0f73841d2e4155c38e2, type: 3}
+  m_Shader: {fileID: 4800000, guid: 580e4faf85762ce40829c180b1cdec85, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -70,6 +70,7 @@ Material:
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
+    - _MovementSpeed: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0

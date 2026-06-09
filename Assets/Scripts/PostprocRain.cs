@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [ExecuteInEditMode] // Чтобы эффект был виден даже в редакторе, а не только в игре
-public class PostProcessHandler : MonoBehaviour
+public class PostprocRain : MonoBehaviour
 {
     public Material effectMaterial;
 

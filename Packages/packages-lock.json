@@ -177,6 +177,16 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.unity.toolchain.win-x86_64-linux-x86_64": {
+      "version": "2.0.11",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.sysroot": "2.0.10",
+        "com.unity.sysroot.linux-x86_64": "2.0.9"
+      },
+      "url": "https://packages.unity.com"
+    },
     "com.unity.ugui": {
       "version": "1.0.0",
       "depth": 0,
@@ -205,7 +215,7 @@
         "com.unity.collections": "2.1.4",
         "com.unity.mathematics": "1.2.6"
       },
-      "hash": "8ba88fe01745872b23b679cc114e2e7977b6ea70"
+      "hash": "a14036cedd5f44d764aa2ae50b91cb1f5672ddc8"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",
