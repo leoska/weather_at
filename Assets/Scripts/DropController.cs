@@ -77,8 +77,6 @@ public class DropController : MonoBehaviour
 {
     public int maxDrops = 4;
     public Material maskMaterial;
-    public Material normalMaterial;
-
     private Drop[] drops;
     private Vector4[] shaderDropData;
     

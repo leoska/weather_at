@@ -28,8 +28,11 @@ public class PostProcessHandler : MonoBehaviour
             Graphics.Blit(Texture2D.blackTexture, dropsMask);
         }
 
-        if (dropController == null)
-        {
+        if (dropController == null || 
+            staticDropsMaterial == null || 
+            normalMaterial == null || 
+            wetGlassMaterial == null
+        ) {
             Graphics.Blit(source, destination);
             return;
         }
@@ -43,7 +46,7 @@ public class PostProcessHandler : MonoBehaviour
         Graphics.Blit(tempMask, dropsMask);
 
         RenderTexture.ReleaseTemporary(tempMask);
-
+        
         normalMaterial.SetTexture("_MaskTex", dropsMask);
 
         RenderTextureDescriptor desc = source.descriptor;
