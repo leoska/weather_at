@@ -349,7 +349,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wetGlassMaterial: {fileID: 2100000, guid: cfb81b83de871fd6bb64fe0a342ec75b, type: 2}
-  staticDropsMaterial: {fileID: 2100000, guid: 1b6417bae97329f3284e0e9afbac2756, type: 2}
+  staticDropsMaterial: {fileID: 2100000, guid: 219f24f4900a19e628f3d6d98caa072d, type: 2}
   normalMaterial: {fileID: 2100000, guid: 7279f5446fe20624289da0c4b235578a, type: 2}
 --- !u!1 &1399903115
 GameObject:

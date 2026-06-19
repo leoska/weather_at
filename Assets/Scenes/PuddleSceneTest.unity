@@ -6022,6 +6022,7 @@ GameObject:
   - component: {fileID: 2113234468}
   - component: {fileID: 2113234467}
   - component: {fileID: 2113234466}
+  - component: {fileID: 2113234470}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -6041,9 +6042,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 520d01de1cf0eea4ba87ee669960d61b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectMaterials:
-  - {fileID: 2100000, guid: 1b6417bae97329f3284e0e9afbac2756, type: 2}
-  - {fileID: 2100000, guid: cfb81b83de871fd6bb64fe0a342ec75b, type: 2}
+  wetGlassMaterial: {fileID: 2100000, guid: cfb81b83de871fd6bb64fe0a342ec75b, type: 2}
+  staticDropsMaterial: {fileID: 2100000, guid: 219f24f4900a19e628f3d6d98caa072d, type: 2}
+  normalMaterial: {fileID: 2100000, guid: 7279f5446fe20624289da0c4b235578a, type: 2}
 --- !u!114 &2113234467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6129,6 +6130,22 @@ Transform:
   - {fileID: 880666892}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 20.5, z: 0}
+--- !u!114 &2113234470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2113234465}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74bd468c6bbb6ce42ae46a6cc5410972, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxDrops: 3
+  maskMaterial: {fileID: 2100000, guid: b11cd01abd7aded19a480380580a7171, type: 2}
+  normalMaterial: {fileID: 2100000, guid: 7279f5446fe20624289da0c4b235578a, type: 2}
+  resolutionRatio: 1.7777778
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
