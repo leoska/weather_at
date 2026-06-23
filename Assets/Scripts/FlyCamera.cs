@@ -1,6 +1,11 @@
 using UnityEngine;
 
-public class FlyCamera : MonoBehaviour
+public interface MoveControllers
+{
+    public float GetMovementSpeed();
+}
+
+public class FlyCamera : MonoBehaviour, MoveControllers
 {
     public enum CameraMode
     {
@@ -59,4 +64,6 @@ public class FlyCamera : MonoBehaviour
             Cursor.visible = true;
         }
     }
+
+    public float GetMovementSpeed() { return movementSpeed; }
 }

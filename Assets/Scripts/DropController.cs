@@ -82,15 +82,21 @@ public class DropController : MonoBehaviour
     
     public float resolutionRatio = 1.77777778f; // 16:9
 
-    private FlyCamera flyCam;
+    [SerializeField] private GameObject gameobjMoveCont;
     private float movingSpeed = 0f;
+
+    private MoveControllers moveCont;
 
     void Start()
     {
-        flyCam = GetComponent<FlyCamera>();
-        if (flyCam == null)
+        if (gameobjMoveCont == null)
         {
-            Debug.LogError("FlyCamera component missing!");
+            gameobjMoveCont = gameObject;
+        }
+        moveCont = gameobjMoveCont.GetComponent<MoveControllers>();
+        if (moveCont == null)
+        {
+            Debug.LogError("MoveController component missing!");
         }
 
         drops = new Drop[maxDrops];
@@ -98,15 +104,15 @@ public class DropController : MonoBehaviour
 
         for (int i = 0; i < maxDrops; i++)
         {
-            drops[i] = new Drop(flyCam != null ? flyCam.movementSpeed : 1f, resolutionRatio);
+            drops[i] = new Drop(moveCont != null ? moveCont.GetMovementSpeed() : 1f, resolutionRatio);
         }
     }
 
     void Update()
     {
-        if (flyCam != null)
+        if (moveCont != null)
         {
-            movingSpeed = flyCam.movementSpeed;
+            movingSpeed = moveCont.GetMovementSpeed();
         }
 
         float dt = Time.deltaTime;

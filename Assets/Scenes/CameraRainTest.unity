@@ -334,8 +334,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxDrops: 4
   maskMaterial: {fileID: 2100000, guid: b11cd01abd7aded19a480380580a7171, type: 2}
-  normalMaterial: {fileID: 2100000, guid: 7279f5446fe20624289da0c4b235578a, type: 2}
   resolutionRatio: 1.7777778
+  gameobjMoveCont: {fileID: 0}
 --- !u!114 &963194231
 MonoBehaviour:
   m_ObjectHideFlags: 0
