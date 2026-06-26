@@ -41,6 +41,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "NextReconstruction",
+                    "type": "Button",
+                    "id": "e1b1fcc7-e514-46bb-80a5-e2e5359a3cbc",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "AfterReconstruction",
+                    "type": "Button",
+                    "id": "5b5cc096-0aa7-4fa9-9f3b-ef747f3e04f6",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -113,7 +131,7 @@
                 {
                     "name": "",
                     "id": "79605760-84be-4d96-80cb-8605bd3b771a",
-                    "path": "<Gamepad>/buttonSouth",
+                    "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
@@ -124,7 +142,7 @@
                 {
                     "name": "",
                     "id": "8677dbcd-550e-4635-8d70-2ac8f90f6028",
-                    "path": "<Keyboard>/e",
+                    "path": "<Keyboard>/f",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard & Mouse",
@@ -137,8 +155,8 @@
                     "id": "bf41427b-f50d-4bb2-9fdc-08b27076819b",
                     "path": "<Gamepad>/rightStick",
                     "interactions": "",
-                    "processors": "ScaleVector2(x=5,y=5)",
-                    "groups": ";Keyboard & Mouse",
+                    "processors": "ScaleVector2(x=30,y=30)",
+                    "groups": ";Gamepad",
                     "action": "Rotation",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -149,7 +167,7 @@
                     "path": "<Mouse>/delta",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Keyboard & Mouse",
                     "action": "Rotation",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -173,6 +191,50 @@
                     "processors": "",
                     "groups": ";Keyboard & Mouse",
                     "action": "Sprint",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "24781086-5986-480f-ac2b-62abae1913e6",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "NextReconstruction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "13a61c21-d82e-451f-ab40-ea61c5348b1c",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard & Mouse",
+                    "action": "NextReconstruction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "67d21413-87e3-4d1d-bc34-6a001db9f94b",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "AfterReconstruction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b5a5730a-edaa-4daa-8483-d11931092ff6",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard & Mouse",
+                    "action": "AfterReconstruction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
