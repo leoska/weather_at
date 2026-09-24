@@ -22,21 +22,21 @@ public class Drop
     
     private const float dt = 0.2f; // Период цикла
 
-    public Drop(float movingSpeed, float resolutionRatio)
+    public Drop(float movingSpeed, float resolutionRatio, float maxRadius)
     {
-        Reset(movingSpeed, resolutionRatio);
+        Reset(movingSpeed, resolutionRatio, maxRadius);
     }
 
-    public void Reset(float movingSpeed, float resolutionRatio)
+    public void Reset(float movingSpeed, float resolutionRatio, float maxRadius)
     {
         startPos = new Vector2(Random.value * resolutionRatio * 0.8f, Random.value + 0.1f);
-        float radius = 0.15f * (Random.value * 0.6f + 0.4f);
+        float radius = maxRadius * (Random.value * 0.6f + 0.4f);
         Data = new DropStruct(startPos, radius);
-        curDelta = NextDelta(movingSpeed);
+        curDelta = NextDelta(movingSpeed, Data.Center, resolutionRatio);
         cycleTime = 0f;
     }
 
-    public void Update(float deltaTime, float movingSpeed, float resolutionRatio)
+    public void Update(float deltaTime, float movingSpeed, float resolutionRatio, float maxRadius)
     {
         cycleTime += deltaTime;
 
@@ -44,12 +44,12 @@ public class Drop
         {
             cycleTime %= dt;
             startPos += curDelta;
-            curDelta = NextDelta(movingSpeed);
+            curDelta = NextDelta(movingSpeed, Data.Center, resolutionRatio);
 
             if (startPos.x - Data.Radius > resolutionRatio || startPos.y - Data.Radius > 1.1f ||
                 startPos.x + Data.Radius < 0 || startPos.y + Data.Radius < -0.1f)
             {
-                Reset(movingSpeed, resolutionRatio);
+                Reset(movingSpeed, resolutionRatio, maxRadius);
                 return;
             }
         }
@@ -57,12 +57,17 @@ public class Drop
         Data.Center = startPos + curDelta * (cycleTime / dt);
     }
 
-    private static Vector2 NextDelta(float speed)
+    private static Vector2 NextDelta(float speed, Vector2 position, float resolutionRatio)
     {
-        float angle = Mathf.PI * speed - Mathf.PI / 2f;
-        Vector2 baseDir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+        Vector2 dir = position - new Vector2(0.5f, 0);
+        dir.y = 1 - dir.y;
+        dir.Normalize();
+        dir += Vector2.up;
+        dir.Normalize();
+
+        Vector2 baseDir = new Vector2(0, -1) * (1 - speed);
         Vector2 shift = new Vector2(RandomNormal(0f, 0.3f), RandomNormal(0f, 0.3f));
-        return (baseDir + shift) * (0.1f + 0.1f * Random.value);
+        return (baseDir + shift + dir * speed) * (0.1f + 0.1f * Random.value);
     }
 
     private static float RandomNormal(float mean = 0f, float stdDev = 1f)
@@ -79,6 +84,8 @@ public class DropController : MonoBehaviour
     public Material maskMaterial;
     private Drop[] drops;
     private Vector4[] shaderDropData;
+
+    public float maxRadius = 0.15f;
     
     public float resolutionRatio = 1.77777778f; // 16:9
 
@@ -98,7 +105,7 @@ public class DropController : MonoBehaviour
 
         for (int i = 0; i < maxDrops; i++)
         {
-            drops[i] = new Drop(flyCam != null ? flyCam.movementSpeed : 1f, resolutionRatio);
+            drops[i] = new Drop(flyCam != null ? flyCam.movementSpeed : 1f, resolutionRatio, maxRadius);
         }
     }
 
@@ -113,7 +120,7 @@ public class DropController : MonoBehaviour
 
         for (int i = 0; i < maxDrops; i++)
         {
-            drops[i].Update(dt, movingSpeed, resolutionRatio);
+            drops[i].Update(dt, movingSpeed, resolutionRatio, maxRadius);
             
             Vector2 center = drops[i].Data.Center;
             float radius = drops[i].Data.Radius;
@@ -125,6 +132,7 @@ public class DropController : MonoBehaviour
     {   
         maskMaterial.SetVectorArray("_DropsData", shaderDropData);
         maskMaterial.SetInt("_DropsCount", maxDrops);
+        maskMaterial.SetFloat("_DeltaTime", Time.deltaTime);
         return maskMaterial;
     }
 }

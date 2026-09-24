@@ -47,6 +47,7 @@ Shader "Unlit/DynDropsMask"
             sampler2D _MainTex;
             float4 _DropsData[100];
             int _DropsCount;
+            float _DeltaTime;
 
             float hitDrop(float2 uv, Drop drop){
                 float distFromDrop = length(uv - drop.center);
@@ -90,7 +91,8 @@ Shader "Unlit/DynDropsMask"
                 oldTrail += tex2D(_MainTex, i.uv + float2( 1,  1) * texelSize);
 
                 col = oldTrail / 10.0;
-                col = max(0.0, col * 0.97 - 0.004);
+                float fading = exp(_DeltaTime * 60 * log(0.9));
+                col = max(0.0, col * fading - 0.004 * _DeltaTime);
                 
                 float2 ratio = float2(_ScreenParams.x / _ScreenParams.y, 1);
 
