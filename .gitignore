@@ -101,6 +101,10 @@ InitTestScene*.unity*
 # Реконструкции
 /[Aa]ssets/[Rr]econstructions/
 /[Aa]ssets/[Rr]econstructions.meta
+/[Aa]ssets/POLYGON\ city\ pack/
+/[Aa]ssets/POLYGON\ city\ pack.meta
+/[Aa]ssets/[Tt]extures/
+/[Aa]ssets/[Tt]extures.meta
 
 # Microsoft Visual Studio
 
