@@ -1,12 +1,12 @@
 using UnityEditor;
 using UnityEngine;
 
-public interface MoveControllers
+public interface MoveController
 {
     public float GetMovementSpeed();
 }
 
-public class FlyCamera : MonoBehaviour, MoveControllers
+public class FlyCamera : MonoBehaviour, MoveController
 {
     public enum CameraMode
     {

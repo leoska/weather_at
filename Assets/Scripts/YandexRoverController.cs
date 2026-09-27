@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class YandexRoverController : MonoBehaviour, MoveControllers
+public class YandexRoverController : MonoBehaviour, MoveController
 {
     [Space, Header("Параметры"), Space]
     [SerializeField] private float _moveSpeed = 5f;

@@ -92,7 +92,7 @@ public class DropController : MonoBehaviour
     [SerializeField] private GameObject gameobjMoveCont;
     private float movingSpeed = 0f;
 
-    private MoveControllers moveCont;
+    private MoveController moveController;
 
     void Start()
     {
@@ -100,8 +100,8 @@ public class DropController : MonoBehaviour
         {
             gameobjMoveCont = gameObject;
         }
-        moveCont = gameobjMoveCont.GetComponent<MoveControllers>();
-        if (moveCont == null)
+        moveController = gameobjMoveCont.GetComponent<MoveController>();
+        if (moveController == null)
         {
             Debug.LogError("MoveController component missing!");
         }
@@ -111,15 +111,15 @@ public class DropController : MonoBehaviour
 
         for (int i = 0; i < maxDrops; i++)
         {
-            drops[i] = new Drop(moveCont != null ? moveCont.GetMovementSpeed() : 1f, resolutionRatio, maxRadius);
+            drops[i] = new Drop(moveController != null ? moveController.GetMovementSpeed() : 1f, resolutionRatio, maxRadius);
         }
     }
 
     void Update()
     {
-        if (moveCont != null)
+        if (moveController != null)
         {
-            movingSpeed = moveCont.GetMovementSpeed();
+            movingSpeed = moveController.GetMovementSpeed();
         }
 
         float dt = Time.deltaTime;
