@@ -11,12 +11,12 @@ public class PostProcessHandler : MonoBehaviour
 
     private DropController dropController;
 
-    public Material flareMaterial;                  // Unlit/WetGlass
-    [Range(0, 360)] public float angleA = 90f; // направление первого луча (градусы)
-    [Range(0, 360)] public float angleB = 20f; // направление второго луча
+    public Material flareMaterial;
+    [Range(0, 360)] public float angleA = 90f;
+    [Range(0, 360)] public float angleB = 20f;
     [Range(1, 4)]   public int downsample = 2;
-    [Range(2, 4)]   public int streakPasses = 4; // 3 прохода ~ 0.3 высоты, 4 прохода ~ весь экран
-
+    [Range(2, 4)]   public int streakPasses = 4;
+    
     void RenderFlare(RenderTexture src, RenderTexture dst)
     {
         if (flareMaterial == null) { Graphics.Blit(src, dst); return; }
@@ -24,7 +24,6 @@ public class PostProcessHandler : MonoBehaviour
         int w = Mathf.Max(16, src.width / downsample);
         int h = Mathf.Max(16, src.height / downsample);
 
-        // Карта ярких пикселей с mip-цепочкой (для ореола, призраков и капель)
         var desc = new RenderTextureDescriptor(w, h, RenderTextureFormat.ARGBHalf, 0)
         {
             useMipMap = true,
@@ -42,7 +41,6 @@ public class PostProcessHandler : MonoBehaviour
         flareMaterial.SetTexture("_BrightTex", bright);
         flareMaterial.SetTexture("_StreakTex", sA);
         flareMaterial.SetTexture("_StreakTex2", sB);
-        flareMaterial.SetFloat("_Time", Time.time);
         Graphics.Blit(src, dst, flareMaterial, 2);
 
         RenderTexture.ReleaseTemporary(sA);
@@ -68,7 +66,7 @@ public class PostProcessHandler : MonoBehaviour
             flareMaterial.SetVector("_StreakDir", new Vector4(dir.x * stride, dir.y * stride, 0, 0));
             Graphics.Blit(src, dst, flareMaterial, 1);
             src = dst;
-            stride *= 7f;   // 7 отсчётов на проход, поэтому линия остаётся сплошной
+            stride *= 7f;
         }
 
         RenderTexture.ReleaseTemporary(src == a ? b : a);

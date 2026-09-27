@@ -95,6 +95,6 @@ public class WeatherComparisonCapture : MonoBehaviour
 
     private string GetFullOutputPath()
     {
-        return Path.Combine(Application.persistentDataPath, outputFolder);
+        return Path.Combine("~weather_at", outputFolder);
     }
 }
