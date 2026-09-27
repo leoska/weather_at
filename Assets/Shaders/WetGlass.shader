@@ -115,7 +115,7 @@ Shader "Unlit/WetGlass"
                 specularReflection.z = pow(specularReflection.z, 0.3);
                 
                 float3 col = tex2D(_MainTex, UV).rgb;
-                col += specularReflection / 25.0;
+                col += specularReflection * 0.01;
 
                 float4 fragColor = float4(col, 1);
                 return fragColor;
